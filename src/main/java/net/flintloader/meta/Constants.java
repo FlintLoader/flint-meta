@@ -9,7 +9,7 @@ package net.flintloader.meta;
  */
 public class Constants {
 
-    public static final String BASE_URL = "http://127.0.0.1:5806";
+    public static final String BASE_URL = "https://meta.flintloader.net";
 
     public static final String FLINT_GROUP = "net.flintloader";
     public static final String FABRIC_GROUP = "net.fabricmc";
