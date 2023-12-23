@@ -42,6 +42,8 @@ public class VersionsDatabase {
     private List<IntermediaryVersion> intermediary;
     @Getter
     private List<InstallerVersion> installers;
+    @Getter
+    private List<ApiVersion> api;
 
     /**
      * Get the index of a minecraft version from the launcher manifest
@@ -84,6 +86,7 @@ public class VersionsDatabase {
         intermediary = loadIntermediary();
         game = loadGameVersions();
         installers = loadInstallers();
+        api = loadApi();
 
         LOGGER.info("DB update took {} ms", (System.currentTimeMillis() - start));
     }
@@ -180,6 +183,22 @@ public class VersionsDatabase {
 
         for (MavenRepository.ArtifactMetadata.Artifact artifact : metadata) {
             versions.add(new InstallerVersion(artifact.url(), artifact.mavenId(), artifact.getVersion(), true));
+        }
+
+        return versions;
+    }
+
+    /**
+     * Get a list of api versions from the flint Maven
+     * @return A list of api versions
+     * @throws IOException Thrown when an error occurs
+     */
+    private List<ApiVersion> loadApi() throws IOException {
+        List<ApiVersion> versions = new ArrayList<>();
+        MavenRepository.ArtifactMetadata metadata = flintMaven.getMetadata(Constants.FLINT_GROUP, Constants.FLINT_API);
+
+        for (MavenRepository.ArtifactMetadata.Artifact artifact : metadata) {
+            versions.add(new ApiVersion(artifact.getVersion(), artifact.getVersion().split("-")[0], artifact.mavenId(), artifact.url()));
         }
 
         return versions;

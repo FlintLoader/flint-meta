@@ -44,7 +44,106 @@ public class VersionsRoute {
             get("/loader/{gameVersion}/{loaderVersion}", this::getSingleLoader);
             get("/loader/{gameVersion}/{loaderVersion}/profile/json", this::getLoaderJsonProfile);
             get("/installer", this::getInstallers);
+            get("/api", this::getApiVersions);
+            get("/api/{gameVersion}", this::getFilteredApiVersion);
+            get("/api/{gameVersion}/{apiVersion}", this::getSingleApiVersion);
         }));
+    }
+
+    @OpenApi(
+            path = "/versions/api/game/version",
+            methods = { HttpMethod.GET },
+            description = "Get a specific api version for a game version",
+            versions = "v1",
+            pathParams = {
+                    @OpenApiParam(
+                            name = "game",
+                            description = "The game version you want to list Flint api version for",
+                            required = true
+                    ),
+                    @OpenApiParam(
+                            name = "version",
+                            description = "The Flint api version to check for",
+                            required = true
+                    )
+            },
+            responses = {
+                    @OpenApiResponse(
+                            status = "200",
+                            description = "JSON arrays of Flint api versions",
+                            content = { @OpenApiContent(from = ApiVersion[].class )}
+                    )
+            }
+    )
+    private void getSingleApiVersion(@NotNull Context context) {
+        String gameVersion = context.pathParam("gameVersion");
+        String apiVersion = context.pathParam("apiVersion");
+
+        List<ApiVersion> filtered = versionsDatabase.getApi().stream().filter(a -> a.getMinecraft().equals(gameVersion)).toList();
+
+        if (filtered.isEmpty()) {
+            context.result("No api version found for " + gameVersion).status(400);
+            return;
+        }
+
+        filtered = filtered.stream().filter(a -> a.getVersion().split("-")[1].equals(apiVersion)).toList();
+
+        if (filtered.isEmpty()) {
+            context.result("No api version found for " + gameVersion).status(400);
+            return;
+        }
+
+        WebServer.jsonResponse(context, filtered);
+    }
+
+    @OpenApi(
+            path = "/versions/api/game",
+            methods = { HttpMethod.GET },
+            description = "Lists all Flint api versions for a game version",
+            versions = "v1",
+            pathParams = {
+                    @OpenApiParam(
+                            name = "game",
+                            description = "The game version you want to list Flint api versions for",
+                            required = true
+                    )
+            },
+            responses = {
+                    @OpenApiResponse(
+                            status = "200",
+                            description = "JSON arrays of Flint api versions",
+                            content = { @OpenApiContent(from = ApiVersion[].class )}
+                    )
+            }
+    )
+    private void getFilteredApiVersion(@NotNull Context context) {
+        String gameVersion = context.pathParam("gameVersion");
+
+        List<ApiVersion> filtered = versionsDatabase.getApi().stream().filter(a -> a.getMinecraft().equals(gameVersion)).toList();
+
+        if (filtered.isEmpty()) {
+            context.result("No api version found for " + gameVersion).status(400);
+            return;
+        }
+
+        WebServer.jsonResponse(context, filtered);
+    }
+
+    @OpenApi(
+            path = "/versions/api",
+            methods = { HttpMethod.GET },
+            description = "Lists all Flint Api versions",
+            versions = "v1",
+            responses = {
+                    @OpenApiResponse(
+                            status = "200",
+                            description = "JSON arrays of Flint Api versions",
+                            content = { @OpenApiContent(from = ApiVersion[].class )}
+                    )
+            }
+    )
+    private void getApiVersions(@NotNull Context context) {
+        WebServer.jsonResponse(context, versionsDatabase.getApi());
     }
 
     @OpenApi(
@@ -327,7 +426,15 @@ public class VersionsRoute {
             }
     )
     private void getAllVersions(@NotNull Context context) {
-        WebServer.jsonResponse(context, new AllVersions(versionsDatabase.getGame(), versionsDatabase.getLoaders(), versionsDatabase.getMappings(), versionsDatabase.getIntermediary(), versionsDatabase.getInstallers()));
+        WebServer.jsonResponse(context,
+                new AllVersions(
+                        versionsDatabase.getGame(),
+                        versionsDatabase.getLoaders(),
+                        versionsDatabase.getMappings(),
+                        versionsDatabase.getIntermediary(),
+                        versionsDatabase.getInstallers(),
+                        versionsDatabase.getApi())
+        );
     }
 
     private LoaderInfo buildLoaderInfo(LoaderVersion loaderVersion, IntermediaryVersion version) {

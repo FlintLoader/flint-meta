@@ -21,5 +21,6 @@ public class AllVersions {
     List<YarnVersion> mappings;
     List<IntermediaryVersion> intermediary;
     List<InstallerVersion> installers;
+    List<ApiVersion> api;
 
 }
