@@ -20,5 +20,6 @@ public class AllVersions {
     List<LoaderVersion> loaders;
     List<YarnVersion> mappings;
     List<IntermediaryVersion> intermediary;
+    List<InstallerVersion> installers;
 
 }

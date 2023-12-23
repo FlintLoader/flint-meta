@@ -43,7 +43,25 @@ public class VersionsRoute {
             get("/loader/{gameVersion}", this::getLoadersFiltered);
             get("/loader/{gameVersion}/{loaderVersion}", this::getSingleLoader);
             get("/loader/{gameVersion}/{loaderVersion}/profile/json", this::getLoaderJsonProfile);
+            get("/installer", this::getInstallers);
         }));
+    }
+
+    @OpenApi(
+            path = "/versions/installer",
+            methods = { HttpMethod.GET },
+            description = "Lists all Flint Installer versions",
+            versions = "v1",
+            responses = {
+                    @OpenApiResponse(
+                            status = "200",
+                            description = "JSON arrays of Flint Installer versions",
+                            content = { @OpenApiContent(from = InstallerVersion[].class )}
+                    )
+            }
+    )
+    private void getInstallers(@NotNull Context context) {
+        WebServer.jsonResponse(context, versionsDatabase.getInstallers());
     }
 
     @OpenApi(
@@ -309,7 +327,7 @@ public class VersionsRoute {
             }
     )
     private void getAllVersions(@NotNull Context context) {
-        WebServer.jsonResponse(context, new AllVersions(versionsDatabase.getGame(), versionsDatabase.getLoaders(), versionsDatabase.getMappings(), versionsDatabase.getIntermediary()));
+        WebServer.jsonResponse(context, new AllVersions(versionsDatabase.getGame(), versionsDatabase.getLoaders(), versionsDatabase.getMappings(), versionsDatabase.getIntermediary(), versionsDatabase.getInstallers()));
     }
 
     private LoaderInfo buildLoaderInfo(LoaderVersion loaderVersion, IntermediaryVersion version) {

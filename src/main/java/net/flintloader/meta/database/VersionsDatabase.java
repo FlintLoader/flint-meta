@@ -10,10 +10,7 @@ import lombok.Getter;
 import net.flintloader.meta.Constants;
 import net.flintloader.meta.maven.MavenRepository;
 import net.flintloader.meta.maven.MinecraftMaven;
-import net.flintloader.meta.models.GameVersion;
-import net.flintloader.meta.models.IntermediaryVersion;
-import net.flintloader.meta.models.LoaderVersion;
-import net.flintloader.meta.models.YarnVersion;
+import net.flintloader.meta.models.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -43,6 +40,8 @@ public class VersionsDatabase {
     private List<YarnVersion> mappings;
     @Getter
     private List<IntermediaryVersion> intermediary;
+    @Getter
+    private List<InstallerVersion> installers;
 
     /**
      * Get the index of a minecraft version from the launcher manifest
@@ -84,6 +83,7 @@ public class VersionsDatabase {
         mappings = loadMappings();
         intermediary = loadIntermediary();
         game = loadGameVersions();
+        installers = loadInstallers();
 
         LOGGER.info("DB update took {} ms", (System.currentTimeMillis() - start));
     }
@@ -164,6 +164,22 @@ public class VersionsDatabase {
 
         for (MavenRepository.ArtifactMetadata.Artifact artifact : metadata) {
             versions.add(new IntermediaryVersion(artifact.mavenId(), artifact.getVersion(), true));
+        }
+
+        return versions;
+    }
+
+    /**
+     * Get a list of installer versions from the flint Maven
+     * @return A list of installer versions
+     * @throws IOException Thrown when an error occurs
+     */
+    private List<InstallerVersion> loadInstallers() throws IOException {
+        List<InstallerVersion> versions = new ArrayList<>();
+        MavenRepository.ArtifactMetadata metadata = flintMaven.getMetadata(Constants.FLINT_GROUP, Constants.INSTALLER_ARTIFACT);
+
+        for (MavenRepository.ArtifactMetadata.Artifact artifact : metadata) {
+            versions.add(new InstallerVersion(artifact.url(), artifact.mavenId(), artifact.getVersion(), true));
         }
 
         return versions;

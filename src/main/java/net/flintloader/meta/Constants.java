@@ -19,8 +19,7 @@ public class Constants {
 
     public static final String LOADER_ARTIFACT = "punch";
 
-    // TODO Installer
-    public static final String INSTALLER_ARTIFACT = "";
+    public static final String INSTALLER_ARTIFACT = "flint-installer";
     public static final String YARN_ARTIFACT = "yarn";
     public static final String INTERMEDIARY_ARTIFACT = "intermediary";
 
